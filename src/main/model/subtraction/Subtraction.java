@@ -13,7 +13,7 @@ import static java.util.Collections.sort;
 
 // Creates a new Subtraction game
 public class Subtraction {
-    public final int MAX_START_NUM = 30;
+    public static final int MAX_START_NUM = 30;
 
     private int currentNumber;
     private List<Integer> subtractionSet;
@@ -60,7 +60,7 @@ public class Subtraction {
 
         subtractionSet = new ArrayList<>();
         for (Integer num : set) {
-            if (num < 1) {
+            if (num < 1 || num > startNumber) {
                 throw new InvalidSubtractionSetException();
             }
             subtractionSet.add(num);
@@ -140,6 +140,11 @@ public class Subtraction {
         return false;
     }
 
+    // Returns true if player won
+    public boolean didPlayerWin() {
+        return isGameOver() && (playerTurn ^ !misere);
+    }
+
     // Gets current position in game.
     public int getCurrentNumber() {
         return currentNumber;
@@ -148,6 +153,11 @@ public class Subtraction {
     // Returns true if it is currently the player's turn.
     public boolean isPlayerTurn() {
         return playerTurn;
+    }
+
+    // Returns true if the game is misere
+    public boolean isMisere() {
+        return misere;
     }
 
 }

@@ -2,31 +2,37 @@ package main.ui;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import main.exceptions.InvalidMoveException;
+import main.exceptions.InvalidStartNumberException;
+import main.exceptions.InvalidSubtractionSetException;
 import main.model.subtraction.Subtraction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 // Stage for Subtraction game
 public class SubtractionStage extends GameStage {
-    Subtraction subtraction;
-    List<Rectangle> tiles;
-    VBox centerVBox;
-    VBox gameSettingsBox;
-    Label currentNumberLabel;
-    Label subtractionSetLabel;
+    private Subtraction subtraction;
+    private List<Rectangle> tiles;
+    private VBox centerVBox;
+    private VBox gameSettingsBox;
+    private Label currentNumberLabel;
+    private Label subtractionSetLabel;
+    private Label playStyleLabel;
 
     public SubtractionStage() {
         setupStage();
+        subtraction = new Subtraction();
         setupGame();
     }
 
@@ -40,7 +46,6 @@ public class SubtractionStage extends GameStage {
     // Sets up the game area
     @Override
     protected void setupGame() {
-        subtraction = new Subtraction();
         tiles = new ArrayList<>();
         centerVBox = new VBox(5);
         centerVBox.setAlignment(Pos.CENTER);
@@ -64,14 +69,19 @@ public class SubtractionStage extends GameStage {
     protected void initializeGameSettingsBox() {
         gameSettingsBox = new VBox(10);
         gameSettingsBox.setAlignment(Pos.CENTER);
+        gameSettingsBox.setPadding(new Insets(10, 10, 10, 10));
         currentNumberLabel = new Label(numTilesLeft());
         subtractionSetLabel = new Label(subtractionSet());
+        playStyleLabel = new Label(playStyle());
         currentNumberLabel.setFont(new Font("Arial", 15));
         subtractionSetLabel.setFont(new Font("Arial", 15));
+        playStyleLabel.setFont(new Font("Arial", 15));
         gameSettingsBox.getChildren().add(currentNumberLabel);
         gameSettingsBox.getChildren().add(subtractionSetLabel);
+        gameSettingsBox.getChildren().add(playStyleLabel);
         root.setRight(gameSettingsBox);
     }
+
 
     // Remove tiles on click if it is the player's turn
     private void handleClick(Rectangle tile) {
@@ -125,9 +135,10 @@ public class SubtractionStage extends GameStage {
             currentNumberLabel.setText(numTilesLeft());
             if (subtraction.isGameOver()) {
                 // Check if game over
-                Label endLabel = new Label("You lost :P");
+                Label endLabel = subtraction.didPlayerWin() ? new Label("You won!") : new Label("You lost :P");
+                Color labelColour = subtraction.didPlayerWin() ? Color.GREEN : Color.RED;
                 endLabel.setFont(new Font("Arial", 30));;
-                endLabel.setTextFill(Color.RED);
+                endLabel.setTextFill(labelColour);
                 centerVBox.getChildren().clear();
                 centerVBox.getChildren().add(endLabel);
             }
@@ -153,9 +164,10 @@ public class SubtractionStage extends GameStage {
 
         // Check if game over
         if (subtraction.isGameOver()) {
-            Label endLabel = new Label("You won!");
+            Label endLabel = subtraction.didPlayerWin() ? new Label("You won!") : new Label("You lost :P");
+            Color labelColour = subtraction.didPlayerWin() ? Color.GREEN : Color.RED;
             endLabel.setFont(new Font("Arial", 30));
-            endLabel.setTextFill(Color.GREEN);
+            endLabel.setTextFill(labelColour);
             centerVBox.getChildren().clear();
             centerVBox.getChildren().add(endLabel);
         }
@@ -183,8 +195,129 @@ public class SubtractionStage extends GameStage {
         return "Subtraction set: " + movesString;
     }
 
+    // Returns the type of play as a String
+    private String playStyle() {
+        String playStyle;
+        if (subtraction.isMisere()) {
+            playStyle = "Misere play";
+        } else {
+            playStyle = "Normal play";
+        }
+        return "Play style: " + playStyle;
+    }
+
     @Override
     protected void newGameSettings() {
+        new SubtractionSettingsStage();
+    }
+
+    // Settings stage for subtraction game
+    private class SubtractionSettingsStage extends SettingsStage {
+        VBox settings;
+        TextField startNumField;
+        TextField subtractionSetField;
+        RadioButton normalButton;
+        RadioButton misereButton;
+        Label messageLabel;
+
+        public SubtractionSettingsStage() {
+            title = "Subtraction Game Settings";
+            super.setupSettingsStage();
+        }
+
+        @Override
+        protected void setupSettingsArea() {
+            settings = new VBox(10);
+            settings.setAlignment(Pos.CENTER);
+
+            setupStartNumberField();
+            setupSubtractionSetField();
+            setupPlayStyleRadioButtons();
+            messageLabel = new Label("");
+            messageLabel.setTextFill(Color.RED);
+            settings.getChildren().add(messageLabel);
+
+            root.setCenter(settings);
+        }
+
+        // Creates a text box to enter starting number of tiles
+        private void setupStartNumberField() {
+            HBox startNumBox = new HBox(5);
+            startNumBox.setAlignment(Pos.CENTER);
+            Label startNumLabel = new Label("Number of tiles: ");
+            startNumField = new TextField("30");
+            startNumField.setMaxWidth(100);
+            startNumLabel.setLabelFor(startNumField);
+            startNumBox.getChildren().add(startNumLabel);
+            startNumBox.getChildren().add(startNumField);
+            settings.getChildren().add(startNumBox);
+        }
+
+        // Creates a text box to enter subtraction set
+        private void setupSubtractionSetField() {
+            HBox subtractionSetBox = new HBox(5);
+            subtractionSetBox.setAlignment(Pos.CENTER);
+            Label subtractionSetLabel = new Label("Subtraction set: ");
+            subtractionSetField = new TextField("1, 2, 3");
+            subtractionSetField.setMaxWidth(100);
+            subtractionSetLabel.setLabelFor(subtractionSetField);
+            subtractionSetBox.getChildren().add(subtractionSetLabel);
+            subtractionSetBox.getChildren().add(subtractionSetField);
+            settings.getChildren().add(subtractionSetBox);
+        }
+
+        // Creates the radio buttons to select between normal and misere play
+        private void setupPlayStyleRadioButtons() {
+            ToggleGroup toggleGroup = new ToggleGroup();
+            normalButton = new RadioButton("Normal Play");
+            normalButton.setToggleGroup(toggleGroup);
+            normalButton.setSelected(true);
+            misereButton = new RadioButton("Misere Play");
+            misereButton.setToggleGroup(toggleGroup);
+            HBox radioButtons = new HBox(20);
+            radioButtons.setAlignment(Pos.CENTER);
+            radioButtons.getChildren().add(normalButton);
+            radioButtons.getChildren().add(misereButton);
+            settings.getChildren().add(radioButtons);
+        }
+
+        @Override
+        protected void applyAndCreateNewGame() {
+            int startNum;
+            try {
+                startNum = Integer.parseInt(startNumField.getText());
+            } catch (NumberFormatException e){
+                messageLabel.setText("Please enter a valid starting number between 0 and " + Subtraction.MAX_START_NUM + ".");
+                return;
+            }
+
+            String subtractionFieldText = subtractionSetField.getText();
+            List<String> subtractionSetStrings = Arrays.asList(subtractionFieldText.split("\\s*,\\s*"));
+            List<Integer> subtractionSet = new ArrayList<>();
+            for (String entry: subtractionSetStrings) {
+                try {
+                    subtractionSet.add(Integer.parseInt(entry));
+                } catch (NumberFormatException e){
+                    messageLabel.setText("Please enter comma-separated numbers only.");
+                    return;
+                }
+            }
+
+            boolean isMisere = misereButton.isSelected();
+
+            try {
+                subtraction = new Subtraction(startNum, subtractionSet, isMisere);
+            } catch (InvalidStartNumberException e) {
+                messageLabel.setText("The starting number must be between 0 and 30.");
+                return;
+            } catch (InvalidSubtractionSetException e) {
+                messageLabel.setText("All numbers must be between 1 and the starting number.");
+                return;
+            }
+
+            setupGame();
+            settingsStage.close();
+        }
 
     }
 
