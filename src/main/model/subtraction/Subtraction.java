@@ -7,6 +7,7 @@ import main.exceptions.InvalidSubtractionSetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static java.util.Collections.sort;
 
@@ -115,7 +116,7 @@ public class Subtraction {
         playerTurn = !playerTurn;
     }
 
-    // Computer makes smallest optimal move. Returns the move made.
+    // Computer makes smallest optimal move. If there is no optimal move, computer makes random move.
     public int makeMove() {
         List<Integer> moves = getAvailableMoves();
         playerTurn = !playerTurn;
@@ -125,7 +126,8 @@ public class Subtraction {
                 return move;
             }
         }
-        int move = getAvailableMoves().get(0);
+        Random random = new Random();
+        int move = moves.get(random.nextInt(moves.size()));
         currentNumber -= move;
         return move;
     }

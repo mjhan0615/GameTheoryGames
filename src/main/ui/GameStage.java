@@ -30,7 +30,9 @@ public abstract class GameStage {
 
         Menu fileMenu = new Menu("File");
         MenuItem newGameMenuItem = new MenuItem("New Game");
+        newGameMenuItem.setOnAction(event -> newGameSettings());
         MenuItem closeGameMenuItem = new MenuItem("Exit Game");
+        closeGameMenuItem.setOnAction(event -> stage.close());
         fileMenu.getItems().add(newGameMenuItem);
         fileMenu.getItems().add(closeGameMenuItem);
 
@@ -50,5 +52,9 @@ public abstract class GameStage {
 
     // Set up the game
     abstract protected void setupGame();
+
+    // Opens up window that allows for user-defined settings for game
+    abstract protected void newGameSettings();
+
 
 }

@@ -159,8 +159,8 @@ public class SubtractionTest {
     public void testComputerMoveNoOpt() {
         game.makeMove();
         int move = game.makeMove();
-        assertEquals( 1, move);
-        assertEquals(27, game.getCurrentNumber());
+        assertTrue(1 <= move && move <= 3);
+        assertEquals(28-move, game.getCurrentNumber());
     }
 
 }
