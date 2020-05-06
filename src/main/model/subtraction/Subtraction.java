@@ -12,6 +12,7 @@ import static java.util.Collections.sort;
 
 // Creates a new Subtraction game
 public class Subtraction {
+    public final int MAX_START_NUM = 30;
 
     private int currentNumber;
     private List<Integer> subtractionSet;
@@ -21,7 +22,7 @@ public class Subtraction {
 
     // Creates a new Subtraction game with starting number 30, subtraction set {1, 2, 3}, and normal play
     public Subtraction() {
-        currentNumber = 30;
+        currentNumber = MAX_START_NUM;
         subtractionSet = new ArrayList<>(Arrays.asList(1, 2, 3));
         misere = false;
         setWinningPositions();
@@ -34,7 +35,7 @@ public class Subtraction {
         if (n < 1) {
             throw new InvalidSubtractionSetException();
         }
-        if (startNumber < 1) {
+        if (startNumber < 1 || startNumber > MAX_START_NUM) {
             throw new InvalidStartNumberException();
         }
 
@@ -51,7 +52,7 @@ public class Subtraction {
     public Subtraction(int startNumber, List<Integer> set, boolean isMisere) throws InvalidStartNumberException,
             InvalidSubtractionSetException {
 
-        if (startNumber < 1) {
+        if (startNumber < 1 || startNumber > MAX_START_NUM) {
             throw new InvalidStartNumberException();
         }
         currentNumber = startNumber;
@@ -140,6 +141,11 @@ public class Subtraction {
     // Gets current position in game.
     public int getCurrentNumber() {
         return currentNumber;
+    }
+
+    // Returns true if it is currently the player's turn.
+    public boolean isPlayerTurn() {
+        return playerTurn;
     }
 
 }
